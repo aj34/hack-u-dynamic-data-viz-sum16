@@ -34,18 +34,17 @@ Change the last number to vary the amount of data you want to work with.
 
 ### Problems
 ---
-###### Using contributors by type
+###### Using contributors by type:
 1. Make a bar graph that given an API endpoint shows top 10 contributors of each type.
 2. Make a pie chart that also depicts the same data.
-###### Use OR_sum.json for the following
+
+###### Using OR_sum.json for the following:
 3. Make a scatter plot/bubble chart that shows total_from_in_state and total_from_the_outside over time.
 
 #### Extra
 
-###### Using contributors by type
+###### Using contributors by type:
 1. Make a grouped bar chart that shows all 3 types against each other.
-
 2. Make 1 bar chart that transitions based on the data it's given.
-
 3. Make a pie chart that transitions based on the amount of 'slices' it has.
 
