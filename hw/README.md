@@ -8,14 +8,14 @@ For all problems use the Oregon Summary Data to calculate range/domain as needed
 // This is summary data for OR to compare with
 const summary = [
   {
-    "in":353648758.9, // total amount contributed
-    "out":341146543.64, // total amount donated
-    "from_within":91600635.93, // donations from within OR
-    "to_within":71467440.8999999, // donations within OR
-    "from_outside":262048122.97, // donations from out of state
-    "to_outside":269679102.74, // donated/sent out of state
-    "total_grass_roots":44503420.66, // each contribution was under $250
-    "total_from_in_state":233200288.870001
+    "in":353648758.9, // total money coming in
+    "out":341146543.64, // total money going out
+    "from_within":91600635.93, // money from within OR
+    "to_within":71467440.8999999, // money staying inside OR
+    "from_outside":262048122.97, // money from out of state
+    "to_outside":269679102.74, // money sent out of state
+    "total_grass_roots":44503420.66, // total of contributions under $250
+    "total_from_in_state":233200288.870001 // total money from inside OR
   }
 ];
 ```
