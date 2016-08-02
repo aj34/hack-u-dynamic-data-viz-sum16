@@ -1,107 +1,195 @@
-# Week 1
+# Week 2
 
-We reviewed the basics of d3 and progressed through 10 branches on:
-https://github.com/hackoregon/hack-university-data-visualization/tree/lesson1/lessons
+We worked on a real problem for visualizing campaign finance data starting with branch project-1 on:
+https://github.com/hackoregon/hack-university-data-visualization/
 
 ##### Basic bar chart
 ```js
-const dataSet = [10, 20, 15, 30, 40, 55, 30, 50, 60];
+// url to be changed
+let URL = 'http://54.213.83.132/hackoregon/http/state_sum_by_date/_/';
 
-const svg = d3.select('#content').append('svg')
-  .attr('width', 600)
-  .attr('height', 250);
+// variables for data
+let DATA_SET;
+let DATA_SET_WEEK;
 
-svg.selectAll('rect')
-  .data(dataSet) // taking in our data
-  .enter() // starting d3
-  .append('rect') // appending rect element
-  .attr('class', 'bar') // assigning class
-  .attr('x', (data, index) => (index * 20))
-  .attr('y', data => (250 - data))
-  .attr('width', 15)
-  .style('height', data => data) // returning data for height value
-```
+// container
+const container = document.getElementById('content');
 
-##### Scaling
-```js
-d3.scale.linear()
-  .domain(/*...*/)
-  .range(/*...*/)
+// margin values
+const margin = {
+  top: 20,
+  right: 50,
+  bottom: 30,
+  left: 70
+};
 
-d3.scale.ordinal()
-  .domain(/*...*/)
-  .rangeBands([0, width], 0.25, 0.25); // (width of data), padding between, padding outside
+// setting the width & height
+const width = container.clientWidth - margin.left - margin.right;
+const height = container.clientHeight - margin.top - margin.bottom;
 
-```
-##### Axis
-```js
-// .axis() method
-d3.svg.axis()
-  .scale(/* x or y scale*/)
-  .orient(/* top bottom left or right */)
-  .ticks(/* amount of ticks in the axis as integer*/)
-  .innerTickSize(/* integer */)
-  .outerTickSize(/* integer */)
-  .tickPadding(/* integer */);
+// svg function
+const svg = d3
+  .select('#content')
+  .append('svg')
+  .attr('width', width + margin.left + margin.right)
+  .attr('height', height + margin.top + margin.bottom)
+  .append('g')
+  .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
-// using .call to execute functions like yAxis
-.call(/* reference to function */);
-```
+// line function
+const line = d3.svg.line()
+  .x(d => xScale(d.date))
+  .y(d => yScale(d.amount))
+  .interpolate('linear');
 
-##### Transitions and events
-```js
-// Toanimate your visualizations
-  .transition(/* start animated transition */)
-  .delay(/* milliseconds */)
-  .duration(/* milliseconds */)
-  .ease(/* eg: in, out, in-out, out-in, elastic, bounce */)
-  .attr(/* change an attribute with a callback and datum */)
-  .style(/* change style - mind where it happens */);
+// functions for scale
+const xScale = d3.time.scale()
+  .range([0, width]);
+const yScale = d3.scale.linear()
+  .range([height - 2, 0]);
 
-// events similar to native js or jQuery
-  .on('mouseover', callback(){
-    /* do stuff here when you hover  */
-  })
-// some more events: mouseup, mouseout, mousedown, keydown, keyup..
+// functions for the axes
+const xAxis = d3.svg.axis()
+  .scale(xScale)
+  .orient('bottom')
+const yAxis = d3.svg.axis()
+  .scale(yScale)
+  .orient('left')
+  .ticks(10);
 
-// handy d3 function to toggle a class
-d3.select(this).classed(/* className */, true|false);
-```
+// parse into date, sort dates
+const parseDate = d3.time.format('%Y-%m-%d').parse;
+const sortByDates = (a, b) => (a.date - b.date);
 
-##### d3 time formatting
-```js
-// formatting time in d3 from available data
-d3.time.format(/* specify the format, eg: %Y/%m/%d */)
+// fetch function
+const getData = async(id) => {
+  // ternary
+  //  if id is truthy ? true return value : false return value; -- similar to if else
+  URL = id ? `http://54.213.83.132/hackoregon/http/current_candidate_transactions_out/${id}/` : 'http://54.213.83.132/hackoregon/http/state_sum_by_date/_/';
+  const fetchedData = await $.getJSON(URL);
+  DATA_SET = await formatData(fetchedData);
+  DATA_SET_WEEK = await groupByWeeks(DATA_SET);
+  return DATA_SET;
+}
 
-const newDate = '2016-03-13'
-const formattedDate = d3.time.format('%Y-%m-%d').parse(newDate);
-// formattedDate is Date object == Sun Mar 13 2016 00:00:00 GMT-0800 (PST)
-d3.time.scale() // functionality for scaling time
-```
+// functions to format the data
+const formatData = (data) => data.map(item => ({
+    date: parseDate(item.tran_date),
+    amount: item.total_out || item.amount
+  }))
+  .sort(sortByDates);
 
-##### Fetching data & setting up line charts
-```js
-// ways to get data from files or online
-d3.json == $.getJSON
-d3.csv
+const groupByWeeks = (data) => {
+  const minDate = data[0].date;
+  const maxDate = data[data.length - 1].date;
+  const weeks = d3.time.weeks(minDate, maxDate);
+  let weeklyArr = [];
+  for (let i = 0; i < weeks.length; i++) {
+    let week = {
+      amount: 0,
+      date: weeks[i]
+    };
+    const range = moment.range(weeks[i], weeks[i + 1]);
+    for (let j = 0; j < data.length; j++) {
+      if (moment(data[j].date)
+        .within(range)) {
+        week.amount += data[j].amount;
+      }
+    }
+    weeklyArr.push(week);
+  }
+  DATA_SET_WEEK = weeklyArr;
+  return DATA_SET_WEEK;
+}
 
-d3.svg.line() // d3 has layouts and this is one for line charts
-.interpolate(/* eg: basis */) //  Read more at https://github.com/d3/d3-interpolate
-```
+// function to visualize the data
+const visualize = (data, opt) => {
+  const dates = data.map(d => d.date);
+  const amounts = data.map(d => d.amount);
 
-##### Nest & Rollup
-```js
-d3.extent(/* an array */) // to get the min & max
+  yScale.domain(d3.extent(amounts));
+  xScale.domain(d3.extent(dates));
 
-// grouping data and working with it
-d3.nest() // allows us to group data
-    .key( function(d) {return d./* key */}) // the key you want to group by
-    .sortKeys(d3.ascending) // can sort here as well
-    .rollup(function(values) { // rollup allows us to run function on each "leaf" element
-      return d3.sum(values,  function(d) { // values are the leaf elements here
-        return d./* some value you want to work with */;
-      })
-    })
-    .entries(/* array */); // this applies the nest operator to the array of data
+  const updateSvg = d3.select('#content')
+    .transition();
+  updateSvg.select('.line')
+    .duration(1000)
+    .attr('d', line(data));
+  updateSvg.select('.x.axis')
+    .duration(1000)
+    .call(xAxis)
+  updateSvg.select('.y.axis')
+    .duration(1000)
+    .call(yAxis);
+}
 
+const visualizeWithChoice = (data) => {
+  if(data){
+    DATA_SET = data;
+    groupByWeeks(data);
+  }
+  switch ($('select option:selected')
+    .val()) {
+  case 'Days':
+    return visualize(DATA_SET);
+  case 'Weeks':
+    return visualize(DATA_SET_WEEK);
+  default:
+  }
+}
+
+
+// initial appending of svg and data
+d3.json(URL, json => {
+    const data = formatData(json);
+    svg.append('path')
+      .attr('class', 'line')
+      .attr('d', line(data));
+    svg.append('g')
+      .attr('class', 'x axis')
+      .attr('transform', 'translate(0,' + height + ')')
+      .call(xAxis);
+    svg.append('g')
+      .attr('class', 'y axis')
+      .call(yAxis);
+    return visualizeWithChoice(data);
+  });
+
+// functions for the page interactions
+$('#options')
+  .on('change', (event, index, value) => {
+    return visualizeWithChoice();
+  });
+
+$('#allState')
+  .on('click', async () => {
+    try {
+      await getData();
+      return visualizeWithChoice();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      return $('#filerId')
+        .val('');
+    }
+  });
+
+$('#submitFiler')
+  .on('click', async () => {
+    try {
+      const $filerId = await $('#filerId');
+      const filerId = await $filerId.val();
+      if(filerId){
+        await getData(filerId);
+        return visualizeWithChoice();
+      } else {
+        alert('Must have an id');
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      return $('#filerId')
+        .val('');
+    }
+  });
 ```
