@@ -99,5 +99,6 @@ class App extends Component {
 
 export default App;
 
-
 ```
+
+We also reviewed the code from week 2 and some new syntax for es2017 and React.
