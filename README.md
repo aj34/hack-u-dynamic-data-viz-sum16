@@ -10,4 +10,5 @@ https://facebook.github.io/react/
 
 ##### Cohesive learning/coding tool
 https://github.com/DavideDaniel/HMR-Express
-You can choose to use codepen.io or jsbin if you wish.
+
+Alternately, you can choose to use codepen.io or jsbin if you wish.
