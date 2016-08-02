@@ -1,45 +1,104 @@
-### Assignment
-For all problems use the Oregon Summary Data to calculate range/domain as needed.
+# Week 3
 
-### Oregon Summary Data ~ Nov 2010 - Aug 2016
+We started with a real-life example for rendering amounts from top 5 donors on Behind The Curtain's data.
+
+##### In class challenge
 ```js
-// This is summary data for OR to compare with
-const summary = [
-  {
-    "in":353648758.9, // total amount contributed
-    "out":341146543.64, // total amount donated
-    "from_within":91600635.93, // donations from within OR
-    "to_within":71467440.8999999, // donations within OR
-    "from_outside":262048122.97, // donations from out of state
-    "to_outside":269679102.74, // donated/sent out of state
-    "total_grass_roots":44503420.66, // each contribution was under $250
-    "total_from_in_state":233200288.870001
-  }
+
+// dummy data
+const donors = [
+  {"name":"John Arnold","value":2750000},
+  {"name":"Michael Bloomberg","value":2385000},
+  {"name":"Loren Parks","value":896800},
+  {"name":"Connie Ballmer","value":505000},
+  {"name":"Tom Hormel","value":500000},
+  {"name":"John K", "value":25}
 ];
+// given the following function
+const colorBlend = d3.interpolateRgb('#CDF3F2', '#08519c');
+
+// make a function that returns to us objects that let us visualize the data
+function donorPercent(amount,donors) {
+  //  value of the highest donor
+
+  // % for size  
+  size: '100%'
+
+  // color
+  color: '#08519c'
+
+  // at 0 it should be size: 0%, color: #fff
+}
+
 ```
 
-### Top contributors by type
+We then applied it to a tiny React project:
+##### React example
+```js
+import React, { Component } from 'react';
+import d3 from 'd3';
+import './App.css';
+
+const colorBlend = d3.interpolateRgb('#CDF3F2', '#08519c');
+function donorPercent(amount,donors) {
+  if(!amount) {
+    return  {
+      size: '0%',
+      color: '#fff'
+    }
+  }
+  let donorMax = d3.max(donors, d => d.value);
+  console.log(donorMax);
+  let donorSize = d3.scale.linear().domain([0,donorMax]).range([0,1]);
+  console.log(donorSize);
+
+  return {
+    size: `${100 * donorSize(amount)}%`,
+    color: colorBlend(donorSize(amount))
+  }
+
+}
+
+const DonorRow = ({ amount, donors }) => {
+  const { size, color } = donorPercent(amount, donors);
+  return(
+    <div style={{
+        height:'1.4rem',
+        flex:'1',
+        display:'block'
+      }}>
+      <div style={{
+          width: size,
+          backgroundColor: color
+        }}>
+        { amount }
+      </div>
+    </div>
+  );
+}
+
+class App extends Component {
+  render() {
+    const donors = [
+      {"name":"John Arnold","value":275000},
+      {"name":"Michael Bloomberg","value":2456000},
+      {"name":"Loren Parks","value":834500},
+      {"name":"Connie Ballmer","value":2505000},
+      {"name":"Tom Hormel","value":500000}
+    ];
+
+    return (
+      <div className="App">
+        { donors.map((d,index) => (
+          <DonorRow key={index} donors={donors} name={d.name} amount={d.value}/>
+        ))}
+      </div>
+    );
+  }
+}
+
+export default App;
+
 ```
-http://54.213.83.132/hackoregon/http/oregon_individual_contributors/{NUMBER}/
-http://54.213.83.132/hackoregon/http/oregon_committee_contributors/{NUMBER}/
-http://54.213.83.132/hackoregon/http/oregon_business_contributors/{NUMBER}/
-```
-For example - top 20 individual contributors would be:
-http://54.213.83.132/hackoregon/http/oregon_individual_contributors/20/
-Change the last number to vary the amount of data you want to work with.
 
-### Problems
-
-1. Make a bar graph that given an API endpoint shows top 10 contributors of each type.
-2. Make a pie chart that also depicts the same data.
-
-###### Use OR_sum.json for the following
-3. Make a scatter plot/bubble chart that shows total_from_in_state and total_from_the_outside over time.
-
-Extra
-Use the Oregon Summary Data to calculate ranges
-Using contributors by type:
-1. Make a grouped bar chart that shows all 3 types against each other.
-2. Make 1 bar chart that transitions based on the data it's given.
-3. Make a pie chart that transitions based on the amount of 'slices' it has.
-
+We also reviewed the code from week 2 and some new syntax for es2017 and React.
